@@ -1,0 +1,38 @@
+# Sample Maestro Flow
+# This flow demonstrates basic Maestro commands
+
+# Specify the app to test
+appId: com.android.settings
+---
+# Launch the app
+- launchApp
+
+# Wait for 1 second
+# - wait: 1
+
+# Tap on "Network & internet" (or similar setting in your device)
+- tapOn:
+    text: "Network & internet"
+
+# Wait for 0.5 seconds
+# - wait: 0.5
+
+# Assert that "Wi-Fi" is visible
+- assertVisible:
+    text: "Wi-Fi"
+
+# Tap on "Wi-Fi"
+- tapOn:
+    text: "Wi-Fi"
+
+# Wait for 1 second
+# - wait: 1
+
+# Go back
+- back
+
+# Wait for 0.5 seconds
+# - wait: 0.5
+
+# Go back again to return to the main settings
+- back

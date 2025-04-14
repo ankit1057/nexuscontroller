@@ -1,0 +1,56 @@
+# Advanced Maestro Flow Examples
+
+# Example 1: App Login Flow
+appId: com.example.app
+---
+- launchApp
+- wait: 2
+- tapOn:
+    text: "Login"
+- inputText:
+    text: "username"
+    id: "username_field"
+- inputText:
+    text: "password"
+    id: "password_field"
+- tapOn:
+    text: "Sign In"
+- assertVisible:
+    text: "Welcome"
+
+# Example 2: Conditional Flow
+appId: com.example.app
+---
+- launchApp
+- wait: 2
+- if:
+    visible: "Update Available"
+    then:
+      - tapOn: "Later"
+    else:
+      - wait: 1
+- tapOn:
+    text: "Start"
+
+# Example 3: Scroll and Find
+appId: com.example.app
+---
+- launchApp
+- wait: 2
+- scrollUntilVisible:
+    element:
+      text: "Settings"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: "Settings"
+
+# Example 4: Custom Script Integration
+appId: com.example.app
+---
+- launchApp
+- wait: 2
+- runScript:
+    file: "custom_script.js"
+- assertVisible:
+    text: "Script Result"

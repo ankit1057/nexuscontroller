@@ -1,0 +1,184 @@
+# Complex Maestro Flow Example
+# This flow demonstrates advanced Maestro features for complex app testing
+
+# Define app package ID
+appId: com.android.settings
+---
+
+# Launch the app
+- launchApp
+- wait: 2
+
+# Define a reusable subflow for navigation
+- runFlow:
+    when:
+      true: true
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "System"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "System"
+      - wait: 1
+
+# Use a conditional flow based on device type
+- if:
+    visible: "Advanced"
+    then:
+      - tapOn:
+          text: "Advanced"
+      - wait: 1
+    else:
+      - if:
+          visible: "Developer options"
+          then:
+            - tapOn:
+                text: "Developer options"
+            - wait: 1
+          else:
+            - scrollUntilVisible:
+                element:
+                  text: "Developer options"
+                direction: DOWN
+                timeout: 5000
+            - tapOn:
+                text: "Developer options"
+            - wait: 1
+
+# Check if developer options are enabled
+- if:
+    visible: "Developer options is off"
+    then:
+      - tapOn:
+          text: "Use developer options"
+      - wait: 1
+      - tapOn:
+          text: "OK"
+      - wait: 1
+    else:
+      - wait: 1
+
+# Scroll and find USB debugging
+- scrollUntilVisible:
+    element:
+      text: "USB debugging"
+    direction: DOWN
+    timeout: 10000
+
+# Toggle USB debugging if needed
+- if:
+    visible: "USB debugging"
+    then:
+      - extendedWaitUntil:
+          visible:
+            text: "USB debugging"
+          timeout: 5000
+      - tapOn:
+          text: "USB debugging"
+      - wait: 1
+      - if:
+          visible: "OK"
+          then:
+            - tapOn:
+                text: "OK"
+            - wait: 1
+          else:
+            - wait: 1
+
+# Take a screenshot
+- takeScreenshot: "developer_options_screen"
+
+# Go back to main settings
+- pressBack
+- wait: 1
+- pressBack
+- wait: 1
+
+# Find and open Display settings
+- scrollUntilVisible:
+    element:
+      text: "Display"
+    direction: UP
+    timeout: 10000
+- tapOn:
+    text: "Display"
+- wait: 1
+
+# Check for Dark theme option
+- if:
+    visible: "Dark theme"
+    then:
+      - tapOn:
+          text: "Dark theme"
+      - wait: 1
+      - pressBack
+      - wait: 1
+    else:
+      - scrollUntilVisible:
+          element:
+            text: "Dark theme"
+          direction: DOWN
+          timeout: 5000
+      - if:
+          visible: "Dark theme"
+          then:
+            - tapOn:
+                text: "Dark theme"
+            - wait: 1
+            - pressBack
+            - wait: 1
+
+# Go back to main settings
+- pressBack
+- wait: 1
+
+# Find and open Battery settings
+- scrollUntilVisible:
+    element:
+      text: "Battery"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: "Battery"
+- wait: 2
+
+# Take a screenshot of battery stats
+- takeScreenshot: "battery_stats"
+
+# Check for battery saver option
+- if:
+    visible: "Battery Saver"
+    then:
+      - tapOn:
+          text: "Battery Saver"
+      - wait: 1
+      - pressBack
+      - wait: 1
+    else:
+      - if:
+          visible: "Battery saver"
+          then:
+            - tapOn:
+                text: "Battery saver"
+            - wait: 1
+            - pressBack
+            - wait: 1
+
+# Go back to main settings
+- pressBack
+- wait: 1
+
+# Run a custom script to get device info
+- runScript:
+    file: "custom_script.js"
+- wait: 1
+
+# Exit the app
+- pressBack
+- wait: 1
+- if:
+    visible: "Settings"
+    then:
+      - pressBack

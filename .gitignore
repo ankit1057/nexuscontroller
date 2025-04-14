@@ -1,0 +1,32 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE files
+.idea/
+.vscode/
+
+# Generated files
+screenshots_*/
+*.log
+maestro_flows/*.yaml
+!maestro_flows/sample_flow.yaml
+
+# macOS
+.DS_Store
