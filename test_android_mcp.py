@@ -7,8 +7,8 @@ This script performs basic tests to verify the functionality of Android MCP.
 import os
 import sys
 import time
-from android_mcp import AndroidController
-from android_mcp.utils import logger
+from nexuscontroller import AndroidController
+from nexuscontroller.utils import logger
 
 def print_test(name, status):
     """Print a formatted test result."""

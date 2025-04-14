@@ -1,0 +1,7 @@
+appId: com.android.settings
+---
+- launchApp
+- tapOn:
+    text: "Network & internet"
+- wait: 2
+- pressBack

@@ -1,5 +1,5 @@
-# Sample Maestro Flow for Android MCP
-# This flow demonstrates basic Maestro commands
+# Sample Maestro Flow for NexusController
+# This flow demonstrates basic Maestro commands for Android automation
 
 # Specify the app to test
 appId: com.android.settings
@@ -7,28 +7,32 @@ appId: com.android.settings
 # Launch the app
 - launchApp
 
-# Wait for 1 second
+# Wait for the app to load
 - wait: 1
 
-# Tap on "Network & internet"
+# Tap on Network & internet
 - tapOn:
     text: "Network & internet"
 
-# Wait for 0.5 seconds
+# Wait for navigation
 - wait: 0.5
 
-# Tap on "Wi-Fi"
+# Verify the Wi-Fi option is visible
+- assertVisible:
+    text: "Wi-Fi"
+
+# Tap on Wi-Fi
 - tapOn:
     text: "Wi-Fi"
 
-# Wait for 1 second
+# Wait for Wi-Fi settings to load
 - wait: 1
 
 # Go back
 - pressBack
 
-# Wait for 0.5 seconds
+# Wait for transition
 - wait: 0.5
 
-# Go back again to return to the main settings
+# Go back to main settings
 - pressBack

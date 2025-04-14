@@ -14,15 +14,15 @@ class TestImports(unittest.TestCase):
     def test_import_android_mcp(self):
         """Test importing the main package."""
         try:
-            import android_mcp
+            import nexuscontroller
             self.assertTrue(True)
         except ImportError:
-            self.fail("Failed to import android_mcp package")
+            self.fail("Failed to import nexuscontroller package")
     
     def test_import_controller(self):
         """Test importing the controller module."""
         try:
-            from android_mcp import AndroidController
+            from nexuscontroller import AndroidController
             self.assertTrue(True)
         except ImportError:
             self.fail("Failed to import AndroidController")
@@ -30,7 +30,7 @@ class TestImports(unittest.TestCase):
     def test_import_utils(self):
         """Test importing the utils module."""
         try:
-            from android_mcp import utils
+            from nexuscontroller import utils
             self.assertTrue(True)
         except ImportError:
             self.fail("Failed to import utils module")

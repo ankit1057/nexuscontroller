@@ -1,162 +1,130 @@
-# Android Mobile Control Platform (MCP) with Maestro Integration
+# NexusController - Advanced Android Automation Platform
 
-A comprehensive platform for controlling Android devices and automating UI interactions. This project provides an improved version of the Android MCP with a modular structure, better error handling, and enhanced Jupyter Notebook integration.
+NexusController is a comprehensive and professional-grade Android device automation platform that bridges the gap between manual testing and continuous integration. Built for QA engineers, developers, and DevOps professionals, NexusController provides a unified solution for Android device control, UI automation, and test orchestration.
 
-## Features
+## Key Features
 
-- **Device Control**: Connect to and control multiple Android devices via ADB
-- **UI Automation**: Create and execute Maestro flows for automated UI testing
-- **Jupyter Integration**: Use the platform directly from Jupyter notebooks with magic commands
-- **Menu System**: Interactive menu-based UI for terminal usage
-- **Modular Design**: Well-organized code structure with separated components
+- **Universal Device Control**: Connect to and manage multiple Android devices simultaneously via ADB with robust error handling and device state management
+- **Intelligent UI Automation**: Create, record, and execute Maestro flows for reliable UI testing that survives app updates and device variations
+- **Jupyter Integration**: Leverage interactive Python notebooks for exploratory testing, automation script development, and results analysis
+- **CI/CD Ready**: Integrate with your continuous integration pipeline through command-line tools and GitHub Actions workflows
+- **Enterprise Scalability**: Extensible architecture designed for large-scale deployments across multiple testing environments
+- **Comprehensive Reporting**: Generate detailed HTML reports with screenshots, error logs, and performance metrics
+
+## Why NexusController?
+
+- **Reliability**: Built with robust error detection, recovery mechanisms, and logging to handle real-world testing scenarios
+- **Flexibility**: Works with any Android app or device without requiring code modifications or instrumentation
+- **Productivity**: Interactive menus, intuitive Jupyter interface, and reusable components accelerate test development
+- **Enterprise Ready**: Designed with security, scalability and commercial deployment requirements in mind
+- **Developer-Focused**: Clear documentation, modular architecture, and extensible design make it easy to adapt to your needs
 
 ## Prerequisites
 
 - Python 3.8+
 - ADB (Android Debug Bridge) installed and in PATH
 - Connected Android device with USB debugging enabled
-- Maestro CLI (optional, for UI automation)
+- Maestro CLI (optional, for enhanced UI automation)
 
-## Installation
+## Quick Start
 
-1. Clone the repository:
+1. **Installation**:
 ```bash
-git clone https://github.com/yourusername/android-mcp.git
-cd android-mcp
+pip install nexuscontroller
 ```
 
-2. Install the required Python packages:
-```bash
-pip install -r requirements.txt
-```
-
-3. Install Maestro CLI (optional, for UI automation):
-```bash
-curl -Ls "https://get.maestro.mobile.dev" | bash
-```
-
-## Usage
-
-### Command Line Interface
-
-Run the Android MCP in interactive menu mode:
-
-```bash
-python android_mcp_jupyter.py
-```
-
-This will start the menu-based UI allowing you to:
-- Select a connected device
-- View device information
-- Take screenshots
-- Record and replay UI interactions
-- Manage apps
-- Execute shell commands
-- And more...
-
-### Jupyter Notebook
-
-1. Start Jupyter Notebook:
-```bash
-jupyter notebook
-```
-
-2. Open the demo notebook `android_mcp_demo.ipynb` or create a new notebook
-
-3. Import the Android MCP module:
+2. **Basic Usage**:
 ```python
-import android_mcp_jupyter as amc
-```
+from nexuscontroller import NexusController
 
-4. Use the magic commands:
-```python
-%android_devices  # List connected devices
-%android_screenshot  # Take a screenshot
-```
+# Initialize controller
+controller = NexusController()
 
-5. Or use the API directly:
-```python
-# List devices
-devices = amc.get_devices()
-
-# Select a device
-device_id = amc.select_device()
+# List connected devices
+devices = controller.get_devices()
 
 # Take a screenshot
-amc.take_screenshot(device_id)
+controller.take_screenshot(devices[0])
 
-# Create a Maestro flow
-actions = [
-    amc.create_maestro_tap(text="Network & internet"),
-    amc.create_maestro_input(text="hello"),
-    "- wait: 2\n"
-]
-flow = amc.create_complete_flow("com.android.settings", actions)
-
-# Execute the flow
-amc.execute_maestro_flow(device_id)
+# Run a UI test
+controller.run_maestro_flow(devices[0], "flows/login_test.yaml")
 ```
 
-## Project Structure
-
-- `android_mcp/` - Main package directory
-  - `__init__.py` - Package initialization
-  - `config.py` - Configuration constants
-  - `controller.py` - Android device controller
-  - `ui.py` - Menu-based user interface
-  - `utils.py` - Utility functions
-- `android_mcp_jupyter.py` - Jupyter integration
-- `android_mcp_demo.ipynb` - Demo Jupyter notebook
-- `maestro_flows/` - Directory for storing Maestro flows
-
-## Advanced Features
-
-### Creating Custom Maestro Flows
-
-```python
-# Create a custom flow
-with open("maestro_flows/custom_flow.yaml", "w") as f:
-    f.write("""appId: com.android.settings
----
-- launchApp
-- tapOn:
-    text: "Network & internet"
-- wait: 1
-- tapOn:
-    text: "Wi-Fi"
-- wait: 2
-- pressBack
-- wait: 1
-- pressBack
-""")
-
-# Execute the custom flow
-amc.execute_maestro_flow(device_id, "maestro_flows/custom_flow.yaml")
+3. **Interactive Mode**:
+```bash
+python -m nexuscontroller
 ```
 
-### Recording Maestro Flows
+## Commercial Use
 
-To record a Maestro flow, use the menu system:
-1. Run `python android_mcp_jupyter.py`
-2. Select a device
-3. Navigate to "Maestro UI Automation"
-4. Choose "Record new Maestro flow"
-5. Interact with your device to record actions
-6. Press Ctrl+C to stop recording
+NexusController is available under MIT license with special provisions for commercial use by large enterprises. See the [LICENSE](LICENSE) file for details.
 
-## Extending the Platform
+## Documentation
 
-The modular design makes it easy to extend the platform:
+For full documentation, examples, and API reference, visit our [documentation site](https://github.com/ankit1057/nexuscontroller).
 
-1. Add new commands by extending the `AndroidController` class in `controller.py`
-2. Add new menu options by modifying the menu classes in `ui.py`
-3. Add new Jupyter magic commands in `android_mcp_jupyter.py`
+## AI Integration
 
-## License
+NexusController is designed to work seamlessly with AI assistants like Claude, GPT, and other AI agents. You can integrate NexusController with your AI tools to automate mobile testing and device control.
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+For integration details, see [AI_INTEGRATION.md](AI_INTEGRATION.md).
+
+### Quick Integration Example
+
+```json
+// mcp.json configuration for AI assistants
+{
+  "mcpServers": {
+    "nexuscontroller": {
+      "command": "python3",
+      "args": ["start_mcp_server.py"],
+      "transport": "stdio"
+    }
+  }
+}
+```
+
+## Contributing
+
+We welcome contributions from the community! Here's how you can help:
+
+1. **Code Contributions**:
+   - Fork the repository
+   - Create a feature branch (`git checkout -b feature/amazing-feature`)
+   - Commit your changes (`git commit -m 'Add amazing feature'`)
+   - Push to the branch (`git push origin feature/amazing-feature`)
+   - Open a Pull Request
+
+2. **Bug Reports & Feature Requests**:
+   - Use the GitHub issue tracker
+   - Provide detailed information for bugs (steps to reproduce, logs, environment)
+   - For feature requests, explain the use case and benefits
+
+3. **Documentation**:
+   - Help improve docs, examples, and tutorials
+   - Submit corrections for typos or unclear instructions
+
+4. **Share Your Experience**:
+   - Write blog posts or tutorials about NexusController
+   - Share your use cases and success stories
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/ankit1057/nexuscontroller.git
+cd nexuscontroller
+
+# Set up development environment
+pip install -e '.[dev]'
+
+# Run tests
+pytest
+```
 
 ## Acknowledgments
 
-- [Maestro](https://maestro.mobile.dev/) for their excellent UI automation tool
-- Android Debug Bridge (ADB) for device communication
+- Created and maintained by [ankit1057](https://github.com/ankit1057)
+- Powered by [Maestro](https://maestro.mobile.dev/) for UI automation
+- Inspired by the mobile testing needs of enterprise app development teams
+- Special thanks to all contributors who help make this project better
