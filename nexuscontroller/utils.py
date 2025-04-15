@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Tuple
 
-from .config import CONSTANTS, DEVICE_INFO_KEYS, BATTERY_STATUS_MAP
+from .config import CONSTANTS, DEVICE_INFO_KEYS, BATTERY_STATUS_MAP, KEYCODES
 
 # Configure logging
 log_dir = "logs"
@@ -102,8 +102,6 @@ def display_keycode_reference() -> None:
     """
     Display a reference of common Android keycodes.
     """
-    from .config import KEYCODES
-    
     print('\n=== Android Keycode Reference ===')
     print("These codes can be used with the 'Send keyevent' option:")
     for name, code in sorted(KEYCODES.items()):
@@ -120,30 +118,6 @@ def ensure_dir(directory):
         logger.info(f"Created directory: {directory}")
     return directory
 
-# Android keycodes for reference
-KEYCODES = {
-    "KEYCODE_HOME": 3,
-    "KEYCODE_BACK": 4,
-    "KEYCODE_DPAD_UP": 19,
-    "KEYCODE_DPAD_DOWN": 20,
-    "KEYCODE_DPAD_LEFT": 21,
-    "KEYCODE_DPAD_RIGHT": 22,
-    "KEYCODE_DPAD_CENTER": 23,
-    "KEYCODE_VOLUME_UP": 24,
-    "KEYCODE_VOLUME_DOWN": 25,
-    "KEYCODE_POWER": 26,
-    "KEYCODE_CAMERA": 27,
-    "KEYCODE_MENU": 82,
-    "KEYCODE_ENTER": 66,
-    "KEYCODE_DEL": 67,
-    "KEYCODE_TAB": 61,
-    "KEYCODE_SPACE": 62,
-    "KEYCODE_APP_SWITCH": 187
-}
-
 def print_keycode_reference():
     """Print a reference of common Android keycodes."""
-    print("\n=== Android Keycode Reference ===")
-    print("These codes can be used with the 'Send keyevent' option:")
-    for name, code in sorted(KEYCODES.items()):
-        print(f"{code}: {name}") 
+    display_keycode_reference() 

@@ -163,9 +163,13 @@ def tap_on_screen(device_id, x, y):
         x: X coordinate.
         y: Y coordinate.
     """
-    # You'll need to implement this method in the AndroidController class
-    # controller.tap_screen(device_id, x, y)
-    print(f"Tapping at coordinates ({x}, {y}) on device {device_id}")
+    try:
+        controller.tap_screen(device_id, int(x), int(y))
+        print(f"✅ Tapped at coordinates ({x}, {y}) on device {device_id}")
+        return True
+    except Exception as e:
+        print(f"❌ Error tapping on screen: {str(e)}")
+        return False
 
 def execute_maestro_flow(device_id=None, flow_file=None):
     """Execute a Maestro flow."""
