@@ -21,7 +21,7 @@ except ImportError:
     sys.exit(1)
 
 # Import NexusControl
-from nexuscontrol_advanced import AndroidMCP
+from nexuscontroller import AndroidController
 
 # Configure logging
 logging.basicConfig(
@@ -31,7 +31,7 @@ logging.basicConfig(
 logger = logging.getLogger("mcp_server")
 
 # Initialize NexusControl
-android_mcp = AndroidMCP()
+android_mcp = AndroidController()
 current_device = None
 
 # Initialize FastMCP
@@ -140,7 +140,7 @@ def launch_app(packageName: str):
             raise Exception("Missing required parameter: packageName")
         
         # Use monkey to launch app
-        result = android_mcp.run_shell_command(
+        result = android_mcp._run_adb_shell_command(
             current_device, 
             f"monkey -p {packageName} -c android.intent.category.LAUNCHER 1"
         )
@@ -158,7 +158,7 @@ def terminate_app(packageName: str):
         if not packageName:
             raise Exception("Missing required parameter: packageName")
         
-        result = android_mcp.run_shell_command(
+        result = android_mcp._run_adb_shell_command(
             current_device, 
             f"am force-stop {packageName}"
         )
@@ -174,7 +174,7 @@ def get_screen_size():
     
     try:
         # Get screen resolution from wm size
-        result = android_mcp.run_shell_command(current_device, "wm size")
+        result = android_mcp._run_adb_shell_command(current_device, "wm size")
         
         # Parse result
         for line in result.split("\n"):
@@ -214,7 +214,7 @@ def swipe_on_screen(direction: str):
             raise Exception("Missing required parameter: direction")
         
         # Get screen size for calculating swipe coordinates
-        result = android_mcp.run_shell_command(current_device, "wm size")
+        result = android_mcp._run_adb_shell_command(current_device, "wm size")
         
         width = 1080  # Default values
         height = 1920
@@ -304,7 +304,7 @@ def open_url(url: str):
             raise Exception("Missing required parameter: url")
         
         # Use am to open URL
-        result = android_mcp.run_shell_command(
+        result = android_mcp._run_adb_shell_command(
             current_device, 
             f"am start -a android.intent.action.VIEW -d {url}"
         )
@@ -321,8 +321,8 @@ def list_elements_on_screen():
     
     try:
         # Use UI Automator to dump the UI hierarchy
-        dump_file = "/sdcard/window_dump.xml"
-        android_mcp.run_shell_command(current_device, f"uiautomator dump {dump_file}")
+        dump_file = "/data/local/tmp/window_dump.xml"
+        android_mcp._run_adb_shell_command(current_device, f"uiautomator dump {dump_file}")
         
         # Pull the file
         local_dump = "window_dump.xml"
@@ -381,7 +381,7 @@ def list_elements_on_screen():
             # Clean up
             try:
                 os.remove(local_dump)
-                android_mcp.run_shell_command(current_device, f"rm {dump_file}")
+                android_mcp._run_adb_shell_command(current_device, f"rm {dump_file}")
             except:
                 pass
             

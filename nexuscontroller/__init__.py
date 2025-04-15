@@ -3,7 +3,8 @@ NexusController - Advanced Android Automation Platform
 
 NexusController is a comprehensive and professional-grade Android device automation platform
 that bridges the gap between manual testing and continuous integration. It provides a unified
-solution for Android device control, UI automation, and test orchestration.
+solution for Android device control, UI automation, and test orchestration with Model Context
+Protocol (MCP) support.
 
 This package provides:
 - Device management and control via ADB
@@ -11,6 +12,7 @@ This package provides:
 - Screen recording and screenshot capabilities
 - App installation and management
 - Interactive CLI and Jupyter notebook interfaces
+- MCP server implementation for AI assistant integration
 
 Created and maintained by ankit1057 (github.com/ankit1057)
 """

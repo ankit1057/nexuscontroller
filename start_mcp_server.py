@@ -17,11 +17,11 @@ def main():
     
     # Set environment variables
     env = os.environ.copy()
-    env['NEXUSCONTROL_MCP_MODE'] = 'true'
+    env['NEXUSCONTROLLER_MCP_MODE'] = 'true'
     env['PYTHONPATH'] = script_dir
     
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Start NexusControl MCP Server")
+    parser = argparse.ArgumentParser(description="Start NexusController MCP Server")
     # Remove host and port arguments as they're not supported
     # parser.add_argument("--host", default="127.0.0.1", help="Host to bind the server to")
     # parser.add_argument("--port", type=int, default=8000, help="Port to bind the server to")
@@ -31,7 +31,7 @@ def main():
     mcp_server_script = os.path.join(script_dir, 'mcp_server.py')
     
     # Print debug info
-    print(f"Starting NexusControl MCP Server...", file=sys.stderr)
+    print(f"Starting NexusController MCP Server...", file=sys.stderr)
     print(f"Script directory: {script_dir}", file=sys.stderr)
     print(f"MCP Server script: {mcp_server_script}", file=sys.stderr)
     
@@ -43,9 +43,9 @@ def main():
             check=True
         )
     except KeyboardInterrupt:
-        print("NexusControl MCP Server stopped by user", file=sys.stderr)
+        print("NexusController MCP Server stopped by user", file=sys.stderr)
     except Exception as e:
-        print(f"Error launching NexusControl MCP Server: {str(e)}", file=sys.stderr)
+        print(f"Error launching NexusController MCP Server: {str(e)}", file=sys.stderr)
         return 1
     
     return 0

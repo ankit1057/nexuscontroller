@@ -4,9 +4,11 @@ ipython>=7.0.0
 notebook>=6.0.0
 pillow>=9.0.0
 
+# Model Context Protocol dependencies
+fastmcp==2.1.1
+
 # Optional dependencies for advanced features
 # Uncomment if needed
-# fastmcp>=0.1.0      # Mobile Control Protocol server/client
 # uiautomator2>=2.16.0 # Advanced UI automation for Android
 # opencv-python>=4.6.0 # Image processing for UI analysis
 # numpy>=1.23.0        # Required for opencv and image processing

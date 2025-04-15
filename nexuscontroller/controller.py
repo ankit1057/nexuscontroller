@@ -113,19 +113,19 @@ class AndroidController:
             
         # Take screenshot on device
         subprocess.run(
-            ["adb", "-s", device_id, "shell", "screencap", "-p", "/sdcard/screenshot.png"],
+            ["adb", "-s", device_id, "shell", "screencap", "-p", "/data/local/tmp/screenshot.png"],
             check=True
         )
         
         # Pull screenshot to computer
         subprocess.run(
-            ["adb", "-s", device_id, "pull", "/sdcard/screenshot.png", output_path],
+            ["adb", "-s", device_id, "pull", "/data/local/tmp/screenshot.png", output_path],
             check=True
         )
         
         # Remove screenshot from device
         subprocess.run(
-            ["adb", "-s", device_id, "shell", "rm", "/sdcard/screenshot.png"],
+            ["adb", "-s", device_id, "shell", "rm", "/data/local/tmp/screenshot.png"],
             check=True
         )
         
@@ -261,61 +261,210 @@ class AndroidController:
         
         return stdout
     
-    def record_screen(self, device_id: str, output_path: Optional[str] = None) -> str:
+    def record_screen(self, device_id: str, duration: int = 30, output_path: Optional[str] = None) -> str:
         """
-        Record a screen video of the device.
+        Record device screen for a specified duration.
         
         Args:
-            device_id: The device ID/serial.
-            output_path: The path to save the video to.
+            device_id: The device ID.
+            duration: Recording duration in seconds.
+            output_path: Path to save the recording. If None, a timestamped filename is generated.
             
         Returns:
-            The path to the saved video.
+            The path to the saved recording file.
         """
-        remote_path = '/sdcard/screen_record.mp4'
+        logger.info(f"Recording screen on device {device_id}")
         
         if not output_path:
-            output_path = generate_timestamp_filename(f"screen_record_{device_id}", "mp4")
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            output_path = f"screenrecord_{device_id}_{timestamp}.mp4"
         
-        print(f"📹 Recording screen on device {device_id}...")
+        # Remote path on device
+        device_path = "/data/local/tmp/screenrecord.mp4"
         
+        # Start recording in a separate thread (it blocks until finished)
+        def record_thread():
+            try:
+                logger.info(f"Starting screen recording for {duration} seconds")
+                cmd = [
+                    "adb", "-s", device_id, "shell", "screenrecord", 
+                    "--time-limit", str(duration), 
+                    device_path
+                ]
+                subprocess.run(cmd, check=True)
+            except subprocess.SubprocessError as e:
+                logger.error(f"Error during screen recording: {str(e)}")
+                
+        # Start recording thread
+        thread = threading.Thread(target=record_thread)
+        thread.daemon = True
+        thread.start()
+        
+        # Wait for recording to complete
+        logger.info(f"Waiting for {duration} seconds to complete recording")
+        thread.join(duration + 5)  # Add buffer time
+        
+        # Pull recording from device
         try:
-            # Record screen
-            run_command([
-                CONSTANTS['ADB_COMMAND'], 
-                CONSTANTS['DEVICE_FLAG'], 
-                device_id, 
-                CONSTANTS['SHELL_COMMAND'], 
-                CONSTANTS['SCREEN_RECORD_COMMAND'], 
-                '-p', 
-                remote_path
-            ], check=True)
+            subprocess.run(
+                ["adb", "-s", device_id, "pull", device_path, output_path],
+                check=True
+            )
             
-            # Pull to local machine
-            run_command([
-                CONSTANTS['ADB_COMMAND'], 
-                CONSTANTS['DEVICE_FLAG'], 
-                device_id, 
-                CONSTANTS['PULL_COMMAND'], 
-                remote_path, 
-                output_path
-            ], check=True)
+            # Remove recording from device
+            subprocess.run(
+                ["adb", "-s", device_id, "shell", "rm", device_path],
+                check=True
+            )
             
-            # Clean up
-            run_command([
-                CONSTANTS['ADB_COMMAND'], 
-                CONSTANTS['DEVICE_FLAG'], 
-                device_id, 
-                CONSTANTS['SHELL_COMMAND'], 
-                'rm', 
-                remote_path
-            ])
-            
-            print(f"✅ Screen recording saved to {output_path}")
+            logger.info(f"Screen recording saved to {output_path}")
             return output_path
-        except Exception as e:
-            logger.error(f"Error recording screen: {str(e)}")
-            print(f"❌ Failed to record screen: {str(e)}")
+        except subprocess.SubprocessError as e:
+            logger.error(f"Error retrieving screen recording: {str(e)}")
             return ""
+
+    def list_packages(self, device_id: str) -> List[str]:
+        """
+        List installed packages on the device.
+        
+        Args:
+            device_id: The device ID.
+            
+        Returns:
+            List of package names.
+        """
+        logger.info(f"Listing packages on device {device_id}")
+        command = "pm list packages"
+        result = self._run_adb_shell_command(device_id, command)
+        
+        packages = []
+        for line in result.splitlines():
+            if line.startswith("package:"):
+                package_name = line.split("package:")[1].strip()
+                packages.append(package_name)
+                
+        return packages
+        
+    def tap_screen(self, device_id: str, x: int, y: int) -> None:
+        """
+        Tap on the device screen at specified coordinates.
+        
+        Args:
+            device_id: The device ID.
+            x: X coordinate.
+            y: Y coordinate.
+        """
+        logger.info(f"Tapping on screen at ({x}, {y}) on device {device_id}")
+        command = f"input tap {x} {y}"
+        self._run_adb_shell_command(device_id, command)
+        
+    def swipe_screen(self, device_id: str, x1: int, y1: int, x2: int, y2: int, duration: int = 300) -> None:
+        """
+        Swipe on the device screen from one point to another.
+        
+        Args:
+            device_id: The device ID.
+            x1: Start X coordinate.
+            y1: Start Y coordinate.
+            x2: End X coordinate.
+            y2: End Y coordinate.
+            duration: Swipe duration in milliseconds.
+        """
+        logger.info(f"Swiping on screen from ({x1}, {y1}) to ({x2}, {y2}) on device {device_id}")
+        command = f"input swipe {x1} {y1} {x2} {y2} {duration}"
+        self._run_adb_shell_command(device_id, command)
+    
+    def send_text(self, device_id: str, text: str) -> None:
+        """
+        Type text on the device.
+        
+        Args:
+            device_id: The device ID.
+            text: The text to type.
+        """
+        logger.info(f"Typing text on device {device_id}")
+        # Escape special characters for shell
+        text = text.replace(" ", "%s").replace("'", "\\'").replace('"', '\\"')
+        command = f"input text '{text}'"
+        self._run_adb_shell_command(device_id, command)
+    
+    def send_keyevent(self, device_id: str, keycode: int) -> None:
+        """
+        Send a keyevent to the device.
+        
+        Args:
+            device_id: The device ID.
+            keycode: The Android keycode to send.
+        """
+        logger.info(f"Sending keyevent {keycode} to device {device_id}")
+        command = f"input keyevent {keycode}"
+        self._run_adb_shell_command(device_id, command)
+    
+    def pull_file(self, device_id: str, device_path: str, local_path: Optional[str] = None) -> str:
+        """
+        Pull a file from the device to the local machine.
+        
+        Args:
+            device_id: The device ID.
+            device_path: The path on the device.
+            local_path: The local path to save the file to. If None, uses the filename from device_path.
+            
+        Returns:
+            The local path where the file was saved.
+        """
+        if not local_path:
+            local_path = os.path.basename(device_path)
+            
+        logger.info(f"Pulling file from {device_path} to {local_path} on device {device_id}")
+        
+        command = [
+            CONSTANTS['ADB_COMMAND'],
+            CONSTANTS['DEVICE_FLAG'],
+            device_id,
+            CONSTANTS['PULL_COMMAND'],
+            device_path,
+            local_path
+        ]
+        
+        stdout, stderr, return_code = run_command(command)
+        
+        if return_code == 0:
+            logger.info(f"File pulled successfully to {local_path}")
+            return local_path
+        else:
+            logger.error(f"Failed to pull file: {stderr}")
+            return ""
+    
+    def push_file(self, device_id: str, local_path: str, device_path: str) -> bool:
+        """
+        Push a file from the local machine to the device.
+        
+        Args:
+            device_id: The device ID.
+            local_path: The local path of the file.
+            device_path: The path on the device to save the file to.
+            
+        Returns:
+            True if successful, False otherwise.
+        """
+        logger.info(f"Pushing file from {local_path} to {device_path} on device {device_id}")
+        
+        command = [
+            CONSTANTS['ADB_COMMAND'],
+            CONSTANTS['DEVICE_FLAG'],
+            device_id,
+            CONSTANTS['PUSH_COMMAND'],
+            local_path,
+            device_path
+        ]
+        
+        stdout, stderr, return_code = run_command(command)
+        
+        if return_code == 0:
+            logger.info(f"File pushed successfully to {device_path}")
+            return True
+        else:
+            logger.error(f"Failed to push file: {stderr}")
+            return False
 
     # Add more Maestro-related methods here 

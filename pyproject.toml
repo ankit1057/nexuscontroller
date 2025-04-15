@@ -1,9 +1,9 @@
 [project]
-name = "nexuscontrol"
+name = "nexuscontroller"
 version = "0.1.0"
-description = "A powerful Android device control and automation platform with advanced Maestro UI testing integration"
+description = "A powerful Android device control and automation platform with advanced Maestro UI testing integration and Model Context Protocol support"
 authors = [
-    {name = "NexusControl Development Team"},
+    {name = "NexusController Development Team"},
 ]
 readme = "README.md"
 requires-python = ">=3.7"
@@ -13,14 +13,14 @@ dependencies = [
     "psutil>=5.9.0",
     "requests>=2.28.0",
     "pyaml>=21.10.1",
-    "uiautomator2>=2.16.0",
-    "adbutils>=0.13.2",
+    "fastmcp==2.1.1",
     "pyyaml>=6.0",
     "pillow>=9.3.0",
 ]
 
 [project.optional-dependencies]
 advanced = [
+    "uiautomator2>=2.16.0",
     "opencv-python>=4.6.0",
     "numpy>=1.23.0", 
     "pandas>=1.5.0",
@@ -38,7 +38,7 @@ environments.virtualenv.in-project = true  # Store venv inside the project
 dependencies = []
 
 [tool.hatch.build.targets.wheel]
-only-include = ["nexuscontrol_basic.py", "nexuscontrol_advanced.py", "nexuscontrol_maestro.py"]
+only-include = ["nexuscontroller"]
 
 [tool.hatch.build.targets.sdist]
-only-include = ["nexuscontrol_basic.py", "nexuscontrol_advanced.py", "nexuscontrol_maestro.py"] 
+only-include = ["nexuscontroller"] 
