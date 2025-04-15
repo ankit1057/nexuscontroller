@@ -59,6 +59,25 @@ python -m nexuscontroller
 
 NexusController is designed to work seamlessly with AI assistants through the Model Context Protocol (MCP). You can integrate NexusController with your AI tools to automate mobile testing and device control.
 
+### MCP Server Usage
+
+The MCP server can be run in several ways after installation:
+
+```bash
+# Method 1: Using the module
+python -m nexuscontroller.mcp
+
+# Method 2: Using the CLI command (available after pip install)
+nexus-mcp
+
+# Method 3: Using the included script
+./start_mcp_server.py
+```
+
+All methods support these options:
+- `--install-deps`: Install required dependencies
+- `--debug`: Enable debug logging
+
 ### Quick Integration Example
 
 ```json
@@ -67,12 +86,14 @@ NexusController is designed to work seamlessly with AI assistants through the Mo
   "mcpServers": {
     "nexuscontroller": {
       "command": "python3",
-      "args": ["start_mcp_server.py"],
+      "args": ["-m", "nexuscontroller.mcp"],
       "transport": "stdio"
     }
   }
 }
 ```
+
+For more details, see the [MCP Server Documentation](nexuscontroller/mcp/README.md).
 
 ## Commercial Use
 
