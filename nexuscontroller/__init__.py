@@ -17,9 +17,16 @@ This package provides:
 Created and maintained by ankit1057 (github.com/ankit1057)
 """
 
-__version__ = "1.0.0"
+__version__ = "0.1.1"
 __author__ = "ankit1057"
 __license__ = "MIT with Commercial Use Clause"
 
 from .controller import AndroidController
-from .config import CONSTANTS 
+from .config import CONSTANTS
+
+# Import MCP server functions
+try:
+    from .mcp import start_server, run
+except ImportError:
+    # MCP module is optional
+    pass 
