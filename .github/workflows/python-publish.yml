@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Package version'
+        description: 'Package version (leave empty to use version from pyproject.toml)'
         required: false
         default: ''
         type: string
@@ -31,13 +31,32 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build twine
-        
+        pip install build twine tomli
+    
+    - name: Extract version from pyproject.toml
+      id: get-version
+      run: |
+        # Extract version from pyproject.toml
+        VERSION=$(python -c "import tomli; print(tomli.load(open('pyproject.toml', 'rb'))['project']['version'])")
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Extracted version: $VERSION"
+    
+    - name: Update version if specified
+      if: ${{ github.event.inputs.version != '' }}
+      run: |
+        echo "Using manually specified version: ${{ github.event.inputs.version }}"
+        echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+        # Update version in pyproject.toml
+        sed -i "s/version = \"${{ env.VERSION }}\"/version = \"${{ github.event.inputs.version }}\"/" pyproject.toml
+        # Update version in __init__.py
+        sed -i "s/__version__ = \"${{ env.VERSION }}\"/__version__ = \"${{ github.event.inputs.version }}\"/" nexuscontroller/__init__.py
+    
     - name: Verify package structure
       run: |
         echo "Checking package structure and dependencies..."
         ls -la nexuscontroller/
         python -c "import sys; from pathlib import Path; sys.exit(0 if Path('nexuscontroller/__init__.py').exists() else 1)"
+        echo "Using version: ${{ env.VERSION }}"
       
     - name: Build package
       run: python -m build
@@ -46,4 +65,5 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
-        skip-existing: true 
+        skip-existing: false
+        verbose: true 
