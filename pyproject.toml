@@ -1,6 +1,6 @@
 [project]
 name = "nexuscontroller"
-version = "0.1.2"
+version = "0.1.3"
 description = "A powerful Android device control and automation platform with advanced Maestro UI testing integration and Model Context Protocol support"
 authors = [
     {name = "NexusController Development Team"},

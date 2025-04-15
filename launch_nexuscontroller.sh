@@ -94,6 +94,11 @@ case $choice in
         ;;
     3)
         echo "Launching NexusController Jupyter Integration..."
+        # Check if jupyter is installed
+        if ! command -v jupyter &> /dev/null; then
+            echo "❌ Jupyter not found. Installing..."
+            pip install jupyter
+        fi
         jupyter notebook "$SCRIPT_DIR/android_mcp_jupyter.ipynb"
         ;;
     4)

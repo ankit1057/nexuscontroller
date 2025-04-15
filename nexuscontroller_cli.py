@@ -154,6 +154,22 @@ def take_screenshot(device_id=None):
             return None
     return None
 
+def record_screen(device_id=None, duration=10):
+    """Record the screen on the selected device."""
+    if not device_id:
+        device_id = select_device()
+    
+    if device_id:
+        try:
+            print(f"📹 Recording screen for {duration} seconds...")
+            video_path = controller.record_screen(device_id, duration)
+            print(f"✅ Screen recording saved to {video_path}")
+            return video_path
+        except Exception as e:
+            print(f"❌ Error recording screen: {str(e)}")
+            return None
+    return None
+
 def tap_on_screen(device_id, x, y):
     """
     Tap on the device screen at the specified coordinates.
@@ -170,6 +186,62 @@ def tap_on_screen(device_id, x, y):
     except Exception as e:
         print(f"❌ Error tapping on screen: {str(e)}")
         return False
+
+def input_text(device_id, text):
+    """
+    Input text on the device.
+    
+    Args:
+        device_id: The device ID.
+        text: Text to input.
+    """
+    try:
+        controller.input_text(device_id, text)
+        print(f"✅ Input text: '{text}' on device {device_id}")
+        return True
+    except Exception as e:
+        print(f"❌ Error inputting text: {str(e)}")
+        return False
+
+def list_installed_apps(device_id=None):
+    """List installed apps on the device."""
+    if not device_id:
+        device_id = select_device()
+    
+    if device_id:
+        try:
+            apps = controller.get_installed_packages(device_id)
+            print(f"\nFound {len(apps)} installed apps on device {device_id}:")
+            
+            # Show first 10 apps
+            for i, app in enumerate(apps[:10]):
+                print(f"{i+1}. {app}")
+            
+            if len(apps) > 10:
+                print(f"... and {len(apps)-10} more apps")
+            
+            return apps
+        except Exception as e:
+            print(f"❌ Error listing apps: {str(e)}")
+            return None
+    return None
+
+def launch_app(device_id=None):
+    """Launch an app on the device."""
+    if not device_id:
+        device_id = select_device()
+    
+    if device_id:
+        package_name = input("Enter package name to launch: ")
+        if package_name:
+            try:
+                controller.launch_app(device_id, package_name)
+                print(f"✅ Launched app: {package_name} on device {device_id}")
+                return True
+            except Exception as e:
+                print(f"❌ Error launching app: {str(e)}")
+                return False
+    return False
 
 def execute_maestro_flow(device_id=None, flow_file=None):
     """Execute a Maestro flow."""
@@ -274,28 +346,144 @@ def build_main_menu():
     main_menu = SubMenu("NexusController - Android Automation Platform", back_option=False)
     
     # Device submenu
-    device_menu = SubMenu("Device Management")
+    device_menu = SubMenu("📱 Device Management")
     device_menu.add_item(ActionMenu("List connected devices", lambda: print(f"\nConnected devices: {get_devices()}")))
     device_menu.add_item(ActionMenu("Select device", select_device))
     device_menu.add_item(ActionMenu("View device info", lambda: print(f"\nDevice info: {controller.get_device_info(select_device(), force_refresh=True)}")))
     
     # Screenshot submenu
-    screenshot_menu = SubMenu("Screenshot & Recording")
-    screenshot_menu.add_item(ActionMenu("Take screenshot", lambda: take_screenshot(select_device())))
+    media_menu = SubMenu("📸 Media Actions")
+    media_menu.add_item(ActionMenu("Take screenshot", lambda: take_screenshot(select_device())))
+    media_menu.add_item(ActionMenu("Record screen", lambda: record_screen(select_device(), int(input("Enter duration in seconds: ")))))
+    
+    # App management submenu
+    app_menu = SubMenu("📦 App Management")
+    app_menu.add_item(ActionMenu("List installed apps", lambda: list_installed_apps(select_device())))
+    app_menu.add_item(ActionMenu("Launch app", lambda: launch_app(select_device())))
+    app_menu.add_item(ActionMenu("Force stop app", lambda: controller.force_stop_app(select_device(), input("Enter package name to stop: "))))
+    app_menu.add_item(ActionMenu("Clear app data", lambda: controller.clear_app_data(select_device(), input("Enter package name to clear data: "))))
+    
+    # System actions submenu
+    system_menu = SubMenu("🔄 System Actions")
+    system_menu.add_item(ActionMenu("Reboot device", lambda: controller.reboot_device(select_device())))
+    system_menu.add_item(ActionMenu("Get device properties", lambda: print(f"\nDevice properties: {controller.get_device_properties(select_device())}")))
+    
+    # Input actions submenu
+    input_menu = SubMenu("👆 Input Actions")
+    input_menu.add_item(ActionMenu("Tap on screen", lambda: tap_on_screen(select_device(), 
+                                                                        input("Enter X coordinate: "), 
+                                                                        input("Enter Y coordinate: "))))
+    input_menu.add_item(ActionMenu("Input text", lambda: input_text(select_device(), input("Enter text to input: "))))
+    input_menu.add_item(ActionMenu("Press key", lambda: controller.press_key(select_device(), input("Enter key code (e.g., HOME, BACK): "))))
+    input_menu.add_item(ActionMenu("Show keycode reference", print_keycode_reference))
     
     # Maestro submenu
-    maestro_menu = SubMenu("Maestro UI Automation")
+    maestro_menu = SubMenu("🤖 Maestro UI Automation")
     maestro_menu.add_item(ActionMenu("Run sample flow", lambda: run_sample_flow(select_device())))
     maestro_menu.add_item(ActionMenu("Load flow from file", load_flow_from_file))
     maestro_menu.add_item(ActionMenu("Execute loaded flow", lambda: execute_maestro_flow(select_device())))
+    maestro_menu.add_item(ActionMenu("Create and save flow", create_and_save_flow))
     
     # Add submenus to main menu
     main_menu.add_item(device_menu)
-    main_menu.add_item(screenshot_menu)
+    main_menu.add_item(media_menu)
+    main_menu.add_item(app_menu)
+    main_menu.add_item(system_menu)
+    main_menu.add_item(input_menu)
     main_menu.add_item(maestro_menu)
     main_menu.add_item(ActionMenu("Exit", sys.exit))
     
     return main_menu
+
+def create_and_save_flow():
+    """Create and save a Maestro flow interactively."""
+    device_id = select_device()
+    if not device_id:
+        return False
+    
+    package_name = input("Enter package name to automate: ")
+    if not package_name:
+        print("❌ Package name is required.")
+        return False
+    
+    controller.clear_maestro_flow()
+    controller.append_to_maestro_flow(f"appId: {package_name}\n---\n")
+    controller.append_to_maestro_flow("- launchApp\n")
+    
+    print("\nBuilding Maestro flow. Select actions to add:")
+    
+    while True:
+        print("\n--- Available Actions ---")
+        print("1. Tap on text")
+        print("2. Tap on element by ID")
+        print("3. Tap on coordinates")
+        print("4. Input text")
+        print("5. Swipe")
+        print("6. Wait")
+        print("7. Press back button")
+        print("8. Save and exit")
+        print("0. Cancel")
+        
+        try:
+            action = int(input("\nSelect action: "))
+            
+            if action == 0:
+                print("❌ Flow creation cancelled.")
+                return False
+            
+            elif action == 1:
+                text = input("Enter text to tap on: ")
+                controller.append_to_maestro_flow(create_maestro_tap(text=text))
+            
+            elif action == 2:
+                element_id = input("Enter element ID to tap on: ")
+                controller.append_to_maestro_flow(create_maestro_tap(id=element_id))
+            
+            elif action == 3:
+                x = input("Enter X coordinate: ")
+                y = input("Enter Y coordinate: ")
+                controller.append_to_maestro_flow(create_maestro_tap(point=[x, y]))
+            
+            elif action == 4:
+                text = input("Enter text to input: ")
+                controller.append_to_maestro_flow(create_maestro_input(text))
+            
+            elif action == 5:
+                start = input("Enter start coordinates (x,y): ")
+                end = input("Enter end coordinates (x,y): ")
+                controller.append_to_maestro_flow(create_maestro_swipe(start, end))
+            
+            elif action == 6:
+                seconds = input("Enter seconds to wait: ")
+                controller.append_to_maestro_flow(f"- wait: {seconds}\n")
+            
+            elif action == 7:
+                controller.append_to_maestro_flow("- back\n")
+            
+            elif action == 8:
+                # Save flow
+                flow_file = input("Enter file path to save flow: ")
+                if not flow_file:
+                    flow_file = f"maestro_flows/{package_name}_flow.yaml"
+                
+                # Ensure directory exists
+                os.makedirs(os.path.dirname(flow_file), exist_ok=True)
+                
+                # Save to file
+                with open(flow_file, 'w') as f:
+                    f.write(controller.maestro_flow)
+                
+                print(f"✅ Flow saved to {flow_file}")
+                return True
+            
+            else:
+                print("Invalid option. Please try again.")
+        
+        except ValueError:
+            print("Please enter a valid number.")
+        except KeyboardInterrupt:
+            print("\nFlow creation cancelled.")
+            return False
 
 def run_sample_flow(device_id):
     """Run the sample Maestro flow."""

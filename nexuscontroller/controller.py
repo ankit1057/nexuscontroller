@@ -198,12 +198,199 @@ class AndroidController:
             
             if return_code == 0:
                 logger.info(f"Maestro is installed and accessible: {stdout.strip()}")
+                return True
             else:
+                logger.warning("Maestro command failed")
                 self._handle_maestro_not_installed()
-        except Exception as e:
-            logger.error(f"Error checking Maestro installation: {str(e)}")
+                return False
+        except FileNotFoundError:
+            logger.warning("Maestro is not installed or not in PATH")
             self._handle_maestro_not_installed()
+            return False
     
+    def get_installed_packages(self, device_id):
+        """
+        Get list of installed packages on the device.
+        
+        Args:
+            device_id: The device ID.
+            
+        Returns:
+            List of package names.
+        """
+        logger.info(f"Getting installed packages on device {device_id}")
+        try:
+            result = subprocess.run(
+                ["adb", "-s", device_id, "shell", "pm", "list", "packages"],
+                capture_output=True, text=True, check=True
+            )
+            
+            packages = []
+            for line in result.stdout.strip().split('\n'):
+                if line.startswith('package:'):
+                    packages.append(line[8:])  # Remove 'package:' prefix
+            
+            logger.info(f"Found {len(packages)} packages on device {device_id}")
+            return packages
+        except Exception as e:
+            logger.error(f"Error listing packages: {str(e)}")
+            raise
+    
+    def launch_app(self, device_id, package_name):
+        """
+        Launch an app on the device.
+        
+        Args:
+            device_id: The device ID.
+            package_name: The package name to launch.
+        """
+        logger.info(f"Launching app {package_name} on device {device_id}")
+        try:
+            # First, find the main activity
+            result = subprocess.run(
+                ["adb", "-s", device_id, "shell", "monkey", "-p", package_name, "-c", "android.intent.category.LAUNCHER", "1"],
+                capture_output=True, text=True, check=True
+            )
+            logger.info(f"App {package_name} launched on device {device_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error launching app: {str(e)}")
+            raise
+    
+    def force_stop_app(self, device_id, package_name):
+        """
+        Force stop an app on the device.
+        
+        Args:
+            device_id: The device ID.
+            package_name: The package name to stop.
+        """
+        logger.info(f"Force stopping app {package_name} on device {device_id}")
+        try:
+            result = subprocess.run(
+                ["adb", "-s", device_id, "shell", "am", "force-stop", package_name],
+                capture_output=True, text=True, check=True
+            )
+            logger.info(f"App {package_name} force stopped on device {device_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error force stopping app: {str(e)}")
+            raise
+    
+    def clear_app_data(self, device_id, package_name):
+        """
+        Clear app data on the device.
+        
+        Args:
+            device_id: The device ID.
+            package_name: The package name to clear data for.
+        """
+        logger.info(f"Clearing data for app {package_name} on device {device_id}")
+        try:
+            result = subprocess.run(
+                ["adb", "-s", device_id, "shell", "pm", "clear", package_name],
+                capture_output=True, text=True, check=True
+            )
+            logger.info(f"Data cleared for app {package_name} on device {device_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error clearing app data: {str(e)}")
+            raise
+    
+    def input_text(self, device_id, text):
+        """
+        Input text on the device.
+        
+        Args:
+            device_id: The device ID.
+            text: Text to input.
+        """
+        logger.info(f"Inputting text on device {device_id}: {text}")
+        try:
+            # Escape quotes
+            escaped_text = text.replace('"', '\\"')
+            result = subprocess.run(
+                ["adb", "-s", device_id, "shell", "input", "text", f'"{escaped_text}"'],
+                capture_output=True, text=True, check=True
+            )
+            logger.info(f"Text input on device {device_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error inputting text: {str(e)}")
+            raise
+    
+    def press_key(self, device_id, key_code):
+        """
+        Press a key on the device.
+        
+        Args:
+            device_id: The device ID.
+            key_code: Key code to press (e.g., HOME, BACK).
+        """
+        logger.info(f"Pressing key {key_code} on device {device_id}")
+        try:
+            # Convert key code name to integer if needed
+            if isinstance(key_code, str) and key_code.upper() in CONSTANTS['KEYCODES']:
+                key_code = CONSTANTS['KEYCODES'][key_code.upper()]
+            
+            result = subprocess.run(
+                ["adb", "-s", device_id, "shell", "input", "keyevent", str(key_code)],
+                capture_output=True, text=True, check=True
+            )
+            logger.info(f"Key {key_code} pressed on device {device_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error pressing key: {str(e)}")
+            raise
+    
+    def reboot_device(self, device_id):
+        """
+        Reboot the device.
+        
+        Args:
+            device_id: The device ID.
+        """
+        logger.info(f"Rebooting device {device_id}")
+        try:
+            result = subprocess.run(
+                ["adb", "-s", device_id, "reboot"],
+                capture_output=True, text=True, check=True
+            )
+            logger.info(f"Device {device_id} rebooting")
+            return True
+        except Exception as e:
+            logger.error(f"Error rebooting device: {str(e)}")
+            raise
+    
+    def get_device_properties(self, device_id):
+        """
+        Get device properties.
+        
+        Args:
+            device_id: The device ID.
+            
+        Returns:
+            Dictionary with device properties.
+        """
+        logger.info(f"Getting device properties for {device_id}")
+        try:
+            result = subprocess.run(
+                ["adb", "-s", device_id, "shell", "getprop"],
+                capture_output=True, text=True, check=True
+            )
+            
+            properties = {}
+            for line in result.stdout.strip().split('\n'):
+                match = re.match(r'\[([^\]]+)\]:\s+\[([^\]]*)\]', line)
+                if match:
+                    properties[match.group(1)] = match.group(2)
+            
+            logger.info(f"Got {len(properties)} properties for device {device_id}")
+            return properties
+        except Exception as e:
+            logger.error(f"Error getting device properties: {str(e)}")
+            raise
+
     def _handle_maestro_not_installed(self) -> None:
         """
         Handle the case when Maestro is not installed.
@@ -334,7 +521,7 @@ class AndroidController:
             List of package names.
         """
         logger.info(f"Listing packages on device {device_id}")
-        command = "pm list packages"
+        command = f"pm list packages"
         result = self._run_adb_shell_command(device_id, command)
         
         packages = []

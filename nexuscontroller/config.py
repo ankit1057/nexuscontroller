@@ -11,6 +11,27 @@ CURRENT_MAESTRO_FLOW_FILE = os.path.join(MAESTRO_FLOWS_DIR, 'current_flow.yaml')
 # Ensure Maestro flows directory exists
 os.makedirs(MAESTRO_FLOWS_DIR, exist_ok=True)
 
+# Common Android keycodes
+KEYCODES = {
+    'HOME': 3,
+    'BACK': 4,
+    'DPAD_UP': 19,
+    'DPAD_DOWN': 20,
+    'DPAD_LEFT': 21,
+    'DPAD_RIGHT': 22,
+    'DPAD_CENTER': 23,
+    'VOLUME_UP': 24,
+    'VOLUME_DOWN': 25,
+    'POWER': 26,
+    'CAMERA': 27,
+    'MENU': 82,
+    'ENTER': 66,
+    'DEL': 67,
+    'TAB': 61,
+    'SPACE': 62,
+    'APP_SWITCH': 187
+}
+
 # Command constants
 CONSTANTS = {
     # ADB commands
@@ -98,6 +119,9 @@ CONSTANTS = {
     # Network
     'WIFI_INTERFACE': 'wlan0',
     'IP_ADDR_COMMAND': 'ip addr show',
+    
+    # Add keycodes to CONSTANTS
+    'KEYCODES': KEYCODES,
 }
 
 # Battery status mapping
@@ -119,25 +143,4 @@ DEVICE_INFO_KEYS = {
     'BATTERY_STATUS_KEY': 'battery_status',
     'SCREEN_RESOLUTION_KEY': 'screen_resolution',
     'IP_ADDRESS_KEY': 'ip_address',
-}
-
-# Common Android keycodes
-KEYCODES = {
-    'KEYCODE_HOME': 3,
-    'KEYCODE_BACK': 4,
-    'KEYCODE_DPAD_UP': 19,
-    'KEYCODE_DPAD_DOWN': 20,
-    'KEYCODE_DPAD_LEFT': 21,
-    'KEYCODE_DPAD_RIGHT': 22,
-    'KEYCODE_DPAD_CENTER': 23,
-    'KEYCODE_VOLUME_UP': 24,
-    'KEYCODE_VOLUME_DOWN': 25,
-    'KEYCODE_POWER': 26,
-    'KEYCODE_CAMERA': 27,
-    'KEYCODE_MENU': 82,
-    'KEYCODE_ENTER': 66,
-    'KEYCODE_DEL': 67,
-    'KEYCODE_TAB': 61,
-    'KEYCODE_SPACE': 62,
-    'KEYCODE_APP_SWITCH': 187
 } 
