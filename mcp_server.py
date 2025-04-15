@@ -13,13 +13,15 @@ import logging
 from typing import Dict, List, Any, Optional
 
 # Import FastMCP library
+FASTMCP_AVAILABLE = False
 try:
     from fastmcp import FastMCP
     from mcp import JSONRPCRequest, JSONRPCResponse, JSONRPCError
+    FASTMCP_AVAILABLE = True
 except ImportError:
-    print("Error: fastmcp library not installed. Install it with: pip install fastmcp")
-    sys.exit(1)
-
+    print("Warning: fastmcp library not installed. MCP functionality will be disabled.")
+    print("Install it with: pip install fastmcp==2.1.1")
+    
 # Import NexusControl
 from nexuscontroller import AndroidController
 
@@ -34,8 +36,11 @@ logger = logging.getLogger("mcp_server")
 android_mcp = AndroidController()
 current_device = None
 
-# Initialize FastMCP
-mcp_server = FastMCP()
+# Initialize FastMCP if available
+if FASTMCP_AVAILABLE:
+    mcp_server = FastMCP()
+else:
+    mcp_server = None
 
 # Define tool functions for MCP methods
 
@@ -400,25 +405,31 @@ def list_elements_on_screen():
 
 # ----- Register tools with FastMCP -----
 
-# Add all the tools to the FastMCP server
-mcp_server.add_tool(name="list_available_devices", fn=list_available_devices)
-mcp_server.add_tool(name="use_device", fn=use_device)
-mcp_server.add_tool(name="take_screenshot", fn=take_screenshot)
-mcp_server.add_tool(name="list_apps", fn=list_apps)
-mcp_server.add_tool(name="launch_app", fn=launch_app)
-mcp_server.add_tool(name="terminate_app", fn=terminate_app)
-mcp_server.add_tool(name="get_screen_size", fn=get_screen_size)
-mcp_server.add_tool(name="click_on_screen_at_coordinates", fn=click_on_screen_at_coordinates)
-mcp_server.add_tool(name="swipe_on_screen", fn=swipe_on_screen)
-mcp_server.add_tool(name="type_keys", fn=type_keys)
-mcp_server.add_tool(name="press_button", fn=press_button)
-mcp_server.add_tool(name="open_url", fn=open_url)
-mcp_server.add_tool(name="list_elements_on_screen", fn=list_elements_on_screen)
+if FASTMCP_AVAILABLE:
+    # Add all the tools to the FastMCP server
+    mcp_server.add_tool(name="list_available_devices", fn=list_available_devices)
+    mcp_server.add_tool(name="use_device", fn=use_device)
+    mcp_server.add_tool(name="take_screenshot", fn=take_screenshot)
+    mcp_server.add_tool(name="list_apps", fn=list_apps)
+    mcp_server.add_tool(name="launch_app", fn=launch_app)
+    mcp_server.add_tool(name="terminate_app", fn=terminate_app)
+    mcp_server.add_tool(name="get_screen_size", fn=get_screen_size)
+    mcp_server.add_tool(name="click_on_screen_at_coordinates", fn=click_on_screen_at_coordinates)
+    mcp_server.add_tool(name="swipe_on_screen", fn=swipe_on_screen)
+    mcp_server.add_tool(name="type_keys", fn=type_keys)
+    mcp_server.add_tool(name="press_button", fn=press_button)
+    mcp_server.add_tool(name="open_url", fn=open_url)
+    mcp_server.add_tool(name="list_elements_on_screen", fn=list_elements_on_screen)
 
 # ----- Main function -----
 
 def main():
     """Main entry point to start the MCP server"""
+    if not FASTMCP_AVAILABLE:
+        print("Error: FastMCP is not installed. Cannot run MCP server.")
+        print("Install with: pip install 'nexuscontroller[mcp]'")
+        sys.exit(1)
+        
     import argparse
     
     parser = argparse.ArgumentParser(description="FastMCP Server for NexusControl")

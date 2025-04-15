@@ -15,17 +15,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.9'
+        
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install build twine
+        
+    - name: Verify package structure
+      run: |
+        echo "Checking package structure and dependencies..."
+        ls -la nexuscontroller/
+        python -c "import sys; from pathlib import Path; sys.exit(0 if Path('nexuscontroller/__init__.py').exists() else 1)"
+      
     - name: Build package
       run: python -m build
+      
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        password: ${{ secrets.PYPI_API_TOKEN }} 
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        skip_existing: true 

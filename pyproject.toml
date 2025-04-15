@@ -13,12 +13,14 @@ dependencies = [
     "psutil>=5.9.0",
     "requests>=2.28.0",
     "pyaml>=21.10.1",
-    "fastmcp==2.1.1",
     "pyyaml>=6.0",
     "pillow>=9.3.0",
 ]
 
 [project.optional-dependencies]
+mcp = [
+    "fastmcp>=0.1.0",
+]
 advanced = [
     "uiautomator2>=2.16.0",
     "opencv-python>=4.6.0",

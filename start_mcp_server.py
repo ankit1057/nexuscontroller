@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-NexusControl MCP Server Launcher
-This script launches NexusControl in MCP server mode for IDE integrations.
+NexusController MCP Server Launcher
+This script launches NexusController in MCP server mode for IDE integrations.
 """
 
 import os
@@ -22,10 +22,21 @@ def main():
     
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Start NexusController MCP Server")
-    # Remove host and port arguments as they're not supported
-    # parser.add_argument("--host", default="127.0.0.1", help="Host to bind the server to")
-    # parser.add_argument("--port", type=int, default=8000, help="Port to bind the server to")
+    parser.add_argument("--install-deps", action="store_true", help="Install required dependencies before starting")
     args = parser.parse_args()
+    
+    # Install dependencies if requested
+    if args.install_deps:
+        print("Installing MCP dependencies...", file=sys.stderr)
+        try:
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "fastmcp==2.1.1"],
+                check=True
+            )
+            print("Dependencies installed successfully", file=sys.stderr)
+        except subprocess.CalledProcessError:
+            print("Failed to install dependencies", file=sys.stderr)
+            return 1
     
     # Path to the MCP server script
     mcp_server_script = os.path.join(script_dir, 'mcp_server.py')
@@ -44,6 +55,14 @@ def main():
         )
     except KeyboardInterrupt:
         print("NexusController MCP Server stopped by user", file=sys.stderr)
+    except subprocess.CalledProcessError as e:
+        if e.returncode == 1:
+            print("MCP Server exited with errors.", file=sys.stderr)
+            print("You may need to install required dependencies with:", file=sys.stderr)
+            print(f"  {sys.executable} {sys.argv[0]} --install-deps", file=sys.stderr)
+        else:
+            print(f"Error launching NexusController MCP Server: {str(e)}", file=sys.stderr)
+        return 1
     except Exception as e:
         print(f"Error launching NexusController MCP Server: {str(e)}", file=sys.stderr)
         return 1

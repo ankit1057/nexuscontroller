@@ -4,8 +4,8 @@ ipython>=7.0.0
 notebook>=6.0.0
 pillow>=9.0.0
 
-# Model Context Protocol dependencies
-fastmcp==2.1.1
+# Optional: Model Context Protocol dependencies 
+# Install separately if needed: pip install fastmcp==2.1.1
 
 # Optional dependencies for advanced features
 # Uncomment if needed
