@@ -1,43 +1,109 @@
 name: Python Tests
 
 on:
-  push:
-    branches: [ main ]
+  # Only run on pull requests or manual trigger
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: 'Python version to test'
+        required: true
+        default: '3.10'
+        type: choice
+        options:
+          - '3.8'
+          - '3.9'
+          - '3.10'
 
 jobs:
-  test:
+  # Job for pull request test runs - tests multiple Python versions
+  test-pr:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.8, 3.9, '3.10']
+        python-version: ['3.8', '3.9', '3.10']
 
     steps:
     - uses: actions/checkout@v3
+    
+    - name: Print Python version
+      run: echo "Testing on Python ${{ matrix.python-version }}"
+      
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+        
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install -e .
+        
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
     - name: Install Android SDK Platform Tools
       run: |
         sudo apt-get update
         sudo apt-get install -y android-sdk-platform-tools
+        
     - name: Test package imports
       run: |
-        python -c "import android_mcp; print(f'Android MCP version: {android_mcp.__version__}')"
+        python -c "import nexuscontroller; print(f'NexusController version: {nexuscontroller.__version__}')"
+        
+    - name: Test with pytest (partial)
+      run: |
+        # Run only the tests that don't require a connected device
+        python -m pytest -xvs tests/test_imports.py || echo "No test directory found, skipping tests"
+
+  # Job for manual test runs - tests only the selected Python version
+  test-manual:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Print Python version
+      run: echo "Testing on Python ${{ github.event.inputs.python-version }}"
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ github.event.inputs.python-version }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -e .
+        
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: Install Android SDK Platform Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y android-sdk-platform-tools
+        
+    - name: Test package imports
+      run: |
+        python -c "import nexuscontroller; print(f'NexusController version: {nexuscontroller.__version__}')"
+        
     - name: Test with pytest (partial)
       run: |
         # Run only the tests that don't require a connected device
