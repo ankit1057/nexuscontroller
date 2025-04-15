@@ -17,7 +17,7 @@ This package provides:
 Created and maintained by ankit1057 (github.com/ankit1057)
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __author__ = "ankit1057"
 __license__ = "MIT with Commercial Use Clause"
 
